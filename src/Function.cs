@@ -26,11 +26,6 @@ namespace Sacro
         string Name { get; }
     }
 
-    public interface IFunctionArgument<out T>
-    {
-        T Read(FunctionCall.ArgumentReader arg);
-    }
-
     public static class Function
     {
         public static IFunction

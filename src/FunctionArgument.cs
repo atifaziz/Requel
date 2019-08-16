@@ -19,6 +19,11 @@ namespace Sacro
     using System;
     using System.Collections.Generic;
 
+    public interface IFunctionArgument<out T>
+    {
+        T Read(FunctionCall.ArgumentReader arg);
+    }
+
     public static class FunctionArgument
     {
         public static IFunctionArgument<T> Create<T>(Func<FunctionCall.ArgumentReader, T> reader)
