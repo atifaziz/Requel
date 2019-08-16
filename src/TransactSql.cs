@@ -14,7 +14,7 @@
 //
 #endregion
 
-namespace Requel
+namespace Sacro
 {
     static class TransactSql
     {

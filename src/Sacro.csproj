@@ -9,7 +9,7 @@
     <Copyright>Copyright 2019 Atif Aziz. All rights reserved.</Copyright>
     <Authors>Atif Aziz</Authors>
     <Owners>Atif Aziz</Owners>
-    <PackageProjectUrl>https://github.com/atifaziz/Requel</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/atifaziz/Sacro</PackageProjectUrl>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageOutputPath>..\dist</PackageOutputPath>
     <PackageLicenseFile>COPYING.txt</PackageLicenseFile>

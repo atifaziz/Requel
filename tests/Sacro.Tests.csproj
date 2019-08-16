@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Requel.csproj" />
+    <ProjectReference Include="..\src\Sacro.csproj" />
   </ItemGroup>
 
 </Project>

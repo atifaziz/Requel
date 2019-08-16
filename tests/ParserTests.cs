@@ -1,4 +1,4 @@
-namespace Requel.Tests
+namespace Sacro.Tests
 {
     using System;
     using System.Linq;
