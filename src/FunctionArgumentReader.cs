@@ -19,24 +19,24 @@ namespace Sacro
     using System;
     using System.Collections.Generic;
 
-    public interface IFunctionArgument<out T>
+    public interface IFunctionArgumentReader<out T>
     {
         T Read(FunctionCall.ArgumentReader arg);
     }
 
-    public static class FunctionArgument
+    public static class FunctionArgumentReader
     {
-        public static IFunctionArgument<T> Create<T>(Func<FunctionCall.ArgumentReader, T> reader)
+        public static IFunctionArgumentReader<T> Create<T>(Func<FunctionCall.ArgumentReader, T> reader)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));
-            return new DelegatingFunctionArgument<T>(reader);
+            return new DelegatingFunctionArgumentReader<T>(reader);
         }
 
-        sealed class DelegatingFunctionArgument<T> : IFunctionArgument<T>
+        sealed class DelegatingFunctionArgumentReader<T> : IFunctionArgumentReader<T>
         {
             readonly Func<FunctionCall.ArgumentReader, T> _reader;
 
-            public DelegatingFunctionArgument(Func<FunctionCall.ArgumentReader, T> reader) =>
+            public DelegatingFunctionArgumentReader(Func<FunctionCall.ArgumentReader, T> reader) =>
                 _reader = reader;
 
             public T Read(FunctionCall.ArgumentReader arg) => _reader(arg);
@@ -46,11 +46,11 @@ namespace Sacro
         {
             // ReSharper disable MemberHidesStaticFromOuterClass
 
-            public static readonly IFunctionArgument<string> Pop = Create(e => e.Read());
-            public static readonly IFunctionArgument<string> PopOrNull = Create(e => e.ReadOr(null));
-            public static readonly IFunctionArgument<string> PopOrEmpty = Create(e => e.ReadOr(string.Empty));
+            public static readonly IFunctionArgumentReader<string> Pop = Create(e => e.Read());
+            public static readonly IFunctionArgumentReader<string> PopOrNull = Create(e => e.ReadOr(null));
+            public static readonly IFunctionArgumentReader<string> PopOrEmpty = Create(e => e.ReadOr(string.Empty));
 
-            public static readonly IFunctionArgument<List<string>> List =
+            public static readonly IFunctionArgumentReader<List<string>> List =
                 Create(e =>
                 {
                     var list = new List<string>();
@@ -59,7 +59,7 @@ namespace Sacro
                     return list;
                 });
 
-            public static readonly IFunctionArgument<List<(string, string)>> Pairs =
+            public static readonly IFunctionArgumentReader<List<(string, string)>> Pairs =
                 Create(e =>
                 {
                     var list = new List<(string, string)>();
@@ -72,14 +72,14 @@ namespace Sacro
             // ReSharper restore MemberHidesStaticFromOuterClass
         }
 
-        public static IFunctionArgument<string> Pop() => Singletons.Pop;
+        public static IFunctionArgumentReader<string> Pop() => Singletons.Pop;
 
-        public static IFunctionArgument<string> PopOr(string otherwise)
+        public static IFunctionArgumentReader<string> PopOr(string otherwise)
             => otherwise == null ? Singletons.PopOrNull
                 : otherwise.Length == 0 ? Singletons.PopOrEmpty
                 : Create(e => e.ReadOr(otherwise));
 
-        public static IFunctionArgument<List<string>> List() => Singletons.List;
-        public static IFunctionArgument<List<(string, string)>> Pairs() => Singletons.Pairs;
+        public static IFunctionArgumentReader<List<string>> List() => Singletons.List;
+        public static IFunctionArgumentReader<List<(string, string)>> Pairs() => Singletons.Pairs;
     }
 }

@@ -20,6 +20,7 @@ namespace Sacro
     using System.Collections.Generic;
     using System.Collections.Immutable;
     using System.Linq;
+    using Far = FunctionArgumentReader;
 
     public interface IFunction : IFunctionCallRewriter
     {
@@ -72,51 +73,51 @@ namespace Sacro
 
         public static IFunction
             Lambda(string name, Func<string, string> f) =>
-                Create(name, FunctionArgument.Pop(), f);
+                Create(name, Far.Pop(), f);
 
         public static IFunction
             Lambda(string name, Func<string, string, string> f) =>
-                Create(name, FunctionArgument.Pop(), FunctionArgument.Pop(), f);
+                Create(name, Far.Pop(), Far.Pop(), f);
 
         public static IFunction
             Lambda(string name, Func<string, string, string, string> f) =>
-                Create(name, FunctionArgument.Pop(), FunctionArgument.Pop(), FunctionArgument.Pop(), f);
+                Create(name, Far.Pop(), Far.Pop(), Far.Pop(), f);
 
         public static IFunction
             Lambda(string name, Func<string, string, string, string, string> f) =>
-                Create(name, FunctionArgument.Pop(), FunctionArgument.Pop(), FunctionArgument.Pop(), FunctionArgument.Pop(), f);
+                Create(name, Far.Pop(), Far.Pop(), Far.Pop(), Far.Pop(), f);
 
         public static IFunction
             Create<T>(
                 string name,
-                IFunctionArgument<T> a,
+                IFunctionArgumentReader<T> a,
                 Func<T, string> f) =>
             Create(name, call => call.ReadAllArguments(arg => f(a.Read(arg))));
 
         public static IFunction
             Create<T1, T2>(
                 string name,
-                IFunctionArgument<T1> a,
-                IFunctionArgument<T2> b,
+                IFunctionArgumentReader<T1> a,
+                IFunctionArgumentReader<T2> b,
                 Func<T1, T2, string> f) =>
             Create(name, call => call.ReadAllArguments(e => f(a.Read(e), b.Read(e))));
 
         public static IFunction
             Create<T1, T2, T3>(
                 string name,
-                IFunctionArgument<T1> a,
-                IFunctionArgument<T2> b,
-                IFunctionArgument<T3> c,
+                IFunctionArgumentReader<T1> a,
+                IFunctionArgumentReader<T2> b,
+                IFunctionArgumentReader<T3> c,
                 Func<T1, T2, T3, string> f) =>
             Create(name, call => call.ReadAllArguments(e => f(a.Read(e), b.Read(e), c.Read(e))));
 
         public static IFunction
             Create<T1, T2, T3, T4>(
                 string name,
-                IFunctionArgument<T1> a,
-                IFunctionArgument<T2> b,
-                IFunctionArgument<T3> c,
-                IFunctionArgument<T4> d,
+                IFunctionArgumentReader<T1> a,
+                IFunctionArgumentReader<T2> b,
+                IFunctionArgumentReader<T3> c,
+                IFunctionArgumentReader<T4> d,
                 Func<T1, T2, T3, T4, string> f) =>
             Create(name, call => call.ReadAllArguments(e => f(a.Read(e), b.Read(e), c.Read(e), d.Read(e))));
 
