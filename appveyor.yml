@@ -9,10 +9,12 @@ skip_commits:
 skip_tags: true
 install:
 - cmd: curl -O https://dot.net/v1/dotnet-install.ps1
-- cmd: ./dotnet-install.ps1 -Version ((type .\global.json | ConvertFrom-Json).sdk.version)
 - sh: curl -O https://dot.net/v1/dotnet-install.sh
 - sh: chmod +x dotnet-install.sh
-- sh: ./dotnet-install.sh --version ((type .\global.json | ConvertFrom-Json).sdk.version)
+- ps: |
+    $sdkVersion = (type .\global.json | ConvertFrom-Json).sdk.version
+    if ($isWindows) { ./dotnet-install.ps1 -Version $sdkVersion }
+    if ($isLinux)   { ./dotnet-install.sh --version $sdkVersion }
 before_build:
 - dotnet --info
 build_script:
