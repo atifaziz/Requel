@@ -8,8 +8,11 @@ skip_commits:
     - '*.txt'
 skip_tags: true
 install:
-- ps: Invoke-WebRequest https://dot.net/v1/dotnet-install.ps1 -OutFile dotnet-install.ps1
-- ps: ./dotnet-install.ps1 -Version ((type .\global.json | ConvertFrom-Json).sdk.version)
+- cmd: curl -O https://dot.net/v1/dotnet-install.ps1
+- cmd: ./dotnet-install.ps1 -Version ((type .\global.json | ConvertFrom-Json).sdk.version)
+- sh: curl -O https://dot.net/v1/dotnet-install.sh
+- sh: chmod +x dotnet-install.sh
+- sh: ./dotnet-install.sh --version ((type .\global.json | ConvertFrom-Json).sdk.version)
 before_build:
 - dotnet --info
 build_script:
