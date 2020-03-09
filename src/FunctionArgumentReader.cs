@@ -26,6 +26,42 @@ namespace Sacro
 
     public static class FunctionArgumentReader
     {
+        public static IFunctionArgumentReader<FunctionCall> Call = Create(r => r.Call);
+
+        public static IFunctionArgumentReader<T> Return<T>(T value) => Create(_ => value);
+
+        public static IFunctionArgumentReader<TResult>
+            Select<T, TResult>(this IFunctionArgumentReader<T> reader, Func<T, TResult> selector)
+        {
+            if (reader == null) throw new ArgumentNullException(nameof(reader));
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            return Create(r => selector(reader.Read(r)));
+        }
+
+        public static IFunctionArgumentReader<TResult>
+            SelectMany<T, TResult>(this IFunctionArgumentReader<T> reader,
+                                   Func<T, IFunctionArgumentReader<TResult>> selector)
+        {
+            if (reader == null) throw new ArgumentNullException(nameof(reader));
+            if (selector == null) throw new ArgumentNullException(nameof(selector));
+
+            return Create(r => selector(reader.Read(r)).Read(r));
+        }
+
+        public static IFunctionArgumentReader<TResult>
+            SelectMany<TFirst, TSecond, TResult>(this IFunctionArgumentReader<TFirst> reader,
+                                                 Func<TFirst, IFunctionArgumentReader<TSecond>> secondSelector,
+                                                 Func<TFirst, TSecond, TResult> resultSelector)
+        {
+            if (reader == null) throw new ArgumentNullException(nameof(reader));
+            if (secondSelector == null) throw new ArgumentNullException(nameof(secondSelector));
+            if (resultSelector == null) throw new ArgumentNullException(nameof(resultSelector));
+
+            return reader.Select(a => secondSelector(a).Select(b => resultSelector(a, b)))
+                         .SelectMany(r => r);
+        }
+
         public static IFunctionArgumentReader<T> Create<T>(Func<FunctionCall.ArgumentReader, T> reader)
         {
             if (reader == null) throw new ArgumentNullException(nameof(reader));

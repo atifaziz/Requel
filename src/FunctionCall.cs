@@ -92,17 +92,5 @@ namespace Sacro
             if (reader == null) throw new ArgumentNullException(nameof(reader));
             return reader.TryRead(out var a) ? a : defaultValue;
         }
-
-        public static T ReadAllArguments<T>(this FunctionCall call, Func<FunctionCall.ArgumentReader, T> reader)
-        {
-            if (call == null) throw new ArgumentNullException(nameof(call));
-            if (reader == null) throw new ArgumentNullException(nameof(reader));
-
-            var ar = call.ReadArguments();
-            var args = reader(ar);
-            if (ar.Count < call.Arguments.Length)
-                throw new InvalidOperationException();
-            return args;
-        }
     }
 }

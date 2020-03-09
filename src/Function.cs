@@ -29,11 +29,17 @@ namespace Sacro
 
     public static class Function
     {
+        static ArgumentException ValidateName(string name)
+        {
+            if (name == null) return new ArgumentNullException(nameof(name));
+            if (name.Length == 0) return new ArgumentException(null, nameof(name));
+            return null;
+        }
+
         public static IFunction
             Create(string name, IFunctionCallRewriter rewriter)
         {
-            if (name == null) throw new ArgumentNullException(nameof(name));
-            if (name.Length == 0) throw new ArgumentException(null, nameof(name));
+            if (ValidateName(name) is Exception e) throw e;
             if (rewriter == null) throw new ArgumentNullException(nameof(rewriter));
 
             return new DelegatingFunction(name, rewriter);
@@ -73,53 +79,44 @@ namespace Sacro
 
         public static IFunction
             Lambda(string name, Func<string, string> f) =>
-                Create(name, Far.Pop(), f);
+                Create(name, from a in Far.Pop()
+                             select f(a));
 
         public static IFunction
             Lambda(string name, Func<string, string, string> f) =>
-                Create(name, Far.Pop(), Far.Pop(), f);
+                Create(name, from a in Far.Pop()
+                             from b in Far.Pop()
+                             select f(a, b));
 
         public static IFunction
             Lambda(string name, Func<string, string, string, string> f) =>
-                Create(name, Far.Pop(), Far.Pop(), Far.Pop(), f);
+                Create(name, from a in Far.Pop()
+                             from b in Far.Pop()
+                             from c in Far.Pop()
+                             select f(a, b, c));
 
         public static IFunction
             Lambda(string name, Func<string, string, string, string, string> f) =>
-                Create(name, Far.Pop(), Far.Pop(), Far.Pop(), Far.Pop(), f);
+                Create(name, from a in Far.Pop()
+                             from b in Far.Pop()
+                             from c in Far.Pop()
+                             from d in Far.Pop()
+                             select f(a, b, c, d));
 
-        public static IFunction
-            Create<T>(
-                string name,
-                IFunctionArgumentReader<T> a,
-                Func<T, string> f) =>
-            Create(name, call => call.ReadAllArguments(arg => f(a.Read(arg))));
+        public static IFunction Create(string name, IFunctionArgumentReader<string> reader)
+        {
+            ValidateName(name);
+            if (reader == null) throw new ArgumentNullException(nameof(reader));
 
-        public static IFunction
-            Create<T1, T2>(
-                string name,
-                IFunctionArgumentReader<T1> a,
-                IFunctionArgumentReader<T2> b,
-                Func<T1, T2, string> f) =>
-            Create(name, call => call.ReadAllArguments(e => f(a.Read(e), b.Read(e))));
-
-        public static IFunction
-            Create<T1, T2, T3>(
-                string name,
-                IFunctionArgumentReader<T1> a,
-                IFunctionArgumentReader<T2> b,
-                IFunctionArgumentReader<T3> c,
-                Func<T1, T2, T3, string> f) =>
-            Create(name, call => call.ReadAllArguments(e => f(a.Read(e), b.Read(e), c.Read(e))));
-
-        public static IFunction
-            Create<T1, T2, T3, T4>(
-                string name,
-                IFunctionArgumentReader<T1> a,
-                IFunctionArgumentReader<T2> b,
-                IFunctionArgumentReader<T3> c,
-                IFunctionArgumentReader<T4> d,
-                Func<T1, T2, T3, T4, string> f) =>
-            Create(name, call => call.ReadAllArguments(e => f(a.Read(e), b.Read(e), c.Read(e), d.Read(e))));
+            return Create(name, call =>
+            {
+                var ar = call.ReadArguments();
+                var args = reader.Read(ar);
+                if (ar.Count < call.Arguments.Length)
+                    throw new InvalidOperationException();
+                return args;
+            });
+        }
 
         public static IFunctionCallRewriter
             ByName(IEnumerable<IFunction> functions,

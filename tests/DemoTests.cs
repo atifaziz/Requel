@@ -87,16 +87,20 @@ namespace Sacro.Tests
         {
             public static readonly IFunction Date = TryParse("DATE", "datetimeoffset");
 
-            public static IFunction LeftOrRight(string name) =>
-                Function.Create(name, Far.Pop(), Far.PopOr("8000"),
-                    (e, len) => $"{name.ToUpperInvariant()}({e}, IIF({len} > 0, {len}, 0))");
-
             public static IFunction TryParse(string name, string type) =>
                 Function.Create(name,
-                    Far.Pop(), Far.PopOr(null),
-                    (e, c) => c is null ? $"TRY_PARSE({e} AS {type})"
-                                        : $"TRY_PARSE({e} AS {type} USING {c})");
+                    from e in Far.Pop()
+                    from c in Far.PopOr(null)
+                    select c is null ? $"TRY_PARSE({e} AS {type})"
+                                     : $"TRY_PARSE({e} AS {type} USING {c})");
         }
+
+        static readonly IFunctionArgumentReader<string> LeftOrRight =
+            from call in Far.Call
+            select call.Name.ToUpperInvariant() into name
+            from e in Far.Pop()
+            from len in Far.PopOr("8000")
+            select $"{name}({e}, IIF({len} > 0, {len}, 0))";
 
         public static IFunctionCallRewriter Rewriter =
             Function.ByName(defaultFunction: FunctionCallRewriter.Unsupported, functions: new[]
@@ -123,25 +127,29 @@ namespace Sacro.Tests
 
                 Function.PassThru("char", 1).RewriteNameInUpperCase(),
                 Function.Lambda("cstr", e => $"CAST({e} AS nvarchar(max))"),
-                Function.Create("mid", Far.Pop(), Far.Pop(), Far.PopOr("8000"),
-                    (e, start, len) => $"SUBSTRING({e}, {start}, IIF({len} > 0, {len}, IIF({len} < 0, LEN({e}) + {len}, 1)))"),
-                Functions.LeftOrRight("left"),
-                Functions.LeftOrRight("right"),
+                Function.Create("mid",
+                    from e in Far.Pop()
+                    from start in Far.Pop()
+                    from len in Far.PopOr("8000")
+                    select $"SUBSTRING({e}, {start}, IIF({len} > 0, {len}, IIF({len} < 0, LEN({e}) + {len}, 1)))"),
+                Function.Create("left", LeftOrRight),
+                Function.Create("right", LeftOrRight),
                 Function.PassThru("len", 1).RewriteNameInUpperCase(),
-                Function.Create("contain$", Far.Pop(), Far.PopOr("''"), (e, s) => $"IIF(CHARINDEX({s}, {e}) != 0, 1, 0)"),
-                Function.Create("multi_replace", Far.Pop(), Far.Pairs(), (e, srs) => srs.Aggregate(e, (i, sr) => $"REPLACE({i}, {sr.Item1}, {sr.Item2})")),
-                Function.Create("replace_all", Far.Pop(), Far.Pop(), Far.List(), (e, b, ss) => ss.Aggregate(e, (i, s) => $"REPLACE({i}, {s}, {b})")),
-                Function.Create("clean", Far.Pop(), Far.List(), (e, ss) => ss.Aggregate(e, (i, s) => $"REPLACE({i}, {s}, '')")),
-                Function.Create("has_any", Far.Pop(), Far.Pop(), Far.List(), (e, s, ss) => $"({string.Join(" OR " , from se in ss.Prepend(s) select $"CHARINDEX({se}, {e}) != 0")})"),
-                Function.Create("has_all", Far.Pop(), Far.Pop(), Far.List(), (e, s, ss) => $"({string.Join(" AND " , from se in ss.Prepend(s) select $"CHARINDEX({se}, {e}) != 0")})"),
+                Function.Create("contain$", from e in Far.Pop() from s in Far.PopOr("''") select $"IIF(CHARINDEX({s}, {e}) != 0, 1, 0)"),
+                Function.Create("multi_replace", from e in Far.Pop() from srs in Far.Pairs() select srs.Aggregate(e, (i, sr) => $"REPLACE({i}, {sr.Item1}, {sr.Item2})")),
+                Function.Create("replace_all", from e in Far.Pop() from b in Far.Pop() from ss in Far.List() select ss.Aggregate(e, (i, s) => $"REPLACE({i}, {s}, {b})")),
+                Function.Create("clean", from e in Far.Pop() from ss in Far.List() select ss.Aggregate(e, (i, s) => $"REPLACE({i}, {s}, '')")),
+                Function.Create("has_any", from e in Far.Pop() from s in Far.Pop() from ss in Far.List() select $"({string.Join(" OR " , from se in ss.Prepend(s) select $"CHARINDEX({se}, {e}) != 0")})"),
+                Function.Create("has_all", from e in Far.Pop() from s in Far.Pop() from ss in Far.List() select $"({string.Join(" AND " , from se in ss.Prepend(s) select $"CHARINDEX({se}, {e}) != 0")})"),
 
-                Function.Create("n@s", Far.List(),
-                    args => $@"CONCAT({string.Join(", '|', ",
-                                           from arg in args
-                                           let name = arg.TrimStart('[').TrimEnd(']')
-                                                         .Replace("\"", string.Empty)
-                                                         .Replace("'", "''")
-                                           select $@"'{name}=', REPLACE(REPLACE({arg}, '|', '\|'), '=', '\=')")})"),
+                Function.Create("n@s",
+                    from args in Far.List()
+                    select $@"CONCAT({string.Join(", '|', ",
+                                          from arg in args
+                                          let name = arg.TrimStart('[').TrimEnd(']')
+                                                        .Replace("\"", string.Empty)
+                                                        .Replace("'", "''")
+                                          select $@"'{name}=', REPLACE(REPLACE({arg}, '|', '\|'), '=', '\=')")})"),
 
                 Function.Create("is_null", FunctionCallRewriter.PassThru.Rename("ISNULL").ArgCount(2)),
                 Function.Create("null_if", FunctionCallRewriter.PassThru.Rename("NULLIF").ArgCount(2)),
