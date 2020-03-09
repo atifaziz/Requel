@@ -112,7 +112,7 @@ namespace Sacro
             {
                 var ar = call.ReadArguments();
                 var args = reader.Read(ar);
-                if (ar.Count < call.Arguments.Length)
+                if (ar.ReadCount < call.Arguments.Length)
                     throw new InvalidOperationException();
                 return args;
             });

@@ -47,20 +47,20 @@ namespace Sacro
         public sealed class ArgumentReader
         {
             public FunctionCall Call { get; }
-            public int Count { get; private set; }
+            public int ReadCount { get; private set; }
 
             internal ArgumentReader(FunctionCall call)
             {
                 Call = call;
-                Count = 0;
+                ReadCount = 0;
             }
 
             public bool TryRead(out string arg)
             {
                 var args = Call.Arguments;
-                if (Count < args.Length)
+                if (ReadCount < args.Length)
                 {
-                    arg = args[Count++];
+                    arg = args[ReadCount++];
                     return true;
                 }
                 else
@@ -73,8 +73,8 @@ namespace Sacro
             public override string ToString()
             {
                 var args = Call.Arguments;
-                var read = args.Take(Count);
-                return string.Join(", ", Count < args.Length ? read.Append("...") : read);
+                var read = args.Take(ReadCount);
+                return string.Join(", ", ReadCount < args.Length ? read.Append("...") : read);
             }
         }
     }
