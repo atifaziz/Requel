@@ -82,26 +82,38 @@ namespace Sacro
                 Create(name, from a in Far.Pop()
                              select f(a));
 
+        static readonly IFunctionArgumentReader<(string, string)> Pop2Args =
+            from a in Far.Pop()
+            from b in Far.Pop()
+            select (a, b);
+
         public static IFunction
             Lambda(string name, Func<string, string, string> f) =>
-                Create(name, from a in Far.Pop()
-                             from b in Far.Pop()
-                             select f(a, b));
+                Create(name, from args in Pop2Args
+                             select f(args.Item1, args.Item2));
+
+        static readonly IFunctionArgumentReader<(string, string, string)> Pop3Args =
+            from a in Far.Pop()
+            from b in Far.Pop()
+            from c in Far.Pop()
+            select (a, b, c);
 
         public static IFunction
             Lambda(string name, Func<string, string, string, string> f) =>
-                Create(name, from a in Far.Pop()
-                             from b in Far.Pop()
-                             from c in Far.Pop()
-                             select f(a, b, c));
+                Create(name, from args in Pop3Args
+                             select f(args.Item1, args.Item2, args.Item3));
+
+        static readonly IFunctionArgumentReader<(string, string, string, string)> Pop4Args =
+            from a in Far.Pop()
+            from b in Far.Pop()
+            from c in Far.Pop()
+            from d in Far.Pop()
+            select (a, b, c, d);
 
         public static IFunction
             Lambda(string name, Func<string, string, string, string, string> f) =>
-                Create(name, from a in Far.Pop()
-                             from b in Far.Pop()
-                             from c in Far.Pop()
-                             from d in Far.Pop()
-                             select f(a, b, c, d));
+                Create(name, from args in Pop4Args
+                             select f(args.Item1, args.Item2, args.Item3, args.Item4));
 
         public static IFunction Create(string name, IFunctionArgumentReader<string> reader)
         {
