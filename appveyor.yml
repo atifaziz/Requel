@@ -20,12 +20,10 @@ environment:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
 install:
 - cmd: curl -OsSL https://dot.net/v1/dotnet-install.ps1
+- ps: if ($isWindows) { ./dotnet-install.ps1 -JsonFile global.json }
 - sh: curl -OsSL https://dot.net/v1/dotnet-install.sh
 - sh: chmod +x dotnet-install.sh
-- ps: |
-    $sdkVersion = (type .\global.json | ConvertFrom-Json).sdk.version
-    if ($isWindows) { ./dotnet-install.ps1 -Version $sdkVersion }
-    if ($isLinux)   { ./dotnet-install.sh --version $sdkVersion }
+- sh: ./dotnet-install.sh --jsonfile global.json
 before_build:
 - dotnet --info
 build_script:
